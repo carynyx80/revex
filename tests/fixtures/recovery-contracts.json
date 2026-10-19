@@ -1,0 +1,356 @@
+{
+  "compiler": "0.8.30+commit.73712a01.Emscripten.clang",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.30;\n// Controlled test fixtures only. These are never deployed to Robinhood Chain.\ncontract TestAsset {\n    mapping(address => uint256) public balanceOf;\n    event Transfer(address indexed from,address indexed to,uint256 value);\n    function mint(address to,uint256 amount) external {balanceOf[to]+=amount;emit Transfer(address(0),to,amount);}\n    function transfer(address to,uint256 amount) external returns(bool){require(balanceOf[msg.sender]>=amount,\"balance\");balanceOf[msg.sender]-=amount;balanceOf[to]+=amount;emit Transfer(msg.sender,to,amount);return true;}\n}\ncontract TestRecoveryVault {\n    TestAsset public asset;\n    mapping(address=>uint256) public balanceOf;\n    bool public paused;\n    event Transfer(address indexed from,address indexed to,uint256 value);\n    constructor(address underlying){asset=TestAsset(underlying);}\n    function seed(address owner,uint256 amount) external {balanceOf[owner]+=amount;asset.mint(address(this),amount);emit Transfer(address(0),owner,amount);}\n    function setPaused(bool value) external {paused=value;}\n    function maxWithdraw(address owner) external view returns(uint256){return paused?0:balanceOf[owner];}\n    function maxRedeem(address owner) external view returns(uint256){return paused?0:balanceOf[owner];}\n    function previewWithdraw(uint256 amount) external pure returns(uint256){return amount;}\n    function previewRedeem(uint256 amount) external pure returns(uint256){return amount;}\n    function withdraw(uint256 amount,address receiver,address owner) external returns(uint256){require(!paused,\"paused\");require(msg.sender==owner,\"owner\");require(balanceOf[owner]>=amount,\"shares\");balanceOf[owner]-=amount;require(asset.transfer(receiver,amount),\"transfer\");emit Transfer(owner,address(0),amount);return amount;}\n    function redeem(uint256 amount,address receiver,address owner) external returns(uint256){require(!paused,\"paused\");require(msg.sender==owner,\"owner\");require(balanceOf[owner]>=amount,\"shares\");balanceOf[owner]-=amount;require(asset.transfer(receiver,amount),\"transfer\");emit Transfer(owner,address(0),amount);return amount;}\n}\n",
+  "contracts": {
+    "TestAsset": {
+      "abi": [
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "name": "balanceOf",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "mint",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "transfer",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      "evm": {
+        "bytecode": {
+          "object": "6080604052348015600e575f5ffd5b506102d58061001c5f395ff3fe608060405234801561000f575f5ffd5b506004361061003f575f3560e01c806340c10f191461004357806370a0823114610058578063a9059cbb1461008a575b5f5ffd5b61005661005136600461021d565b6100ad565b005b610077610066366004610245565b5f6020819052908152604090205481565b6040519081526020015b60405180910390f35b61009d61009836600461021d565b61011d565b6040519015158152602001610081565b6001600160a01b0382165f90815260208190526040812080548392906100d4908490610279565b90915550506040518181526001600160a01b038316905f907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef9060200160405180910390a35050565b335f908152602081905260408120548211156101695760405162461bcd60e51b815260206004820152600760248201526662616c616e636560c81b604482015260640160405180910390fd5b335f908152602081905260408120805484929061018790849061028c565b90915550506001600160a01b0383165f90815260208190526040812080548492906101b3908490610279565b90915550506040518281526001600160a01b0384169033907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef9060200160405180910390a35060015b92915050565b80356001600160a01b0381168114610218575f5ffd5b919050565b5f5f6040838503121561022e575f5ffd5b61023783610202565b946020939093013593505050565b5f60208284031215610255575f5ffd5b61025e82610202565b9392505050565b634e487b7160e01b5f52601160045260245ffd5b808201808211156101fc576101fc610265565b818103818111156101fc576101fc61026556fea26469706673582212201df53664c419d14b42c7145cf7514fa071d50190ee84f529498d7728c7de568c64736f6c634300081e0033"
+        }
+      }
+    },
+    "TestRecoveryVault": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "underlying",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        },
+        {
+          "inputs": [],
+          "name": "asset",
+          "outputs": [
+            {
+              "internalType": "contract TestAsset",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "name": "balanceOf",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "name": "maxRedeem",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "name": "maxWithdraw",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "paused",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "previewRedeem",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "previewWithdraw",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "pure",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "receiver",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "name": "redeem",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "seed",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bool",
+              "name": "value",
+              "type": "bool"
+            }
+          ],
+          "name": "setPaused",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "receiver",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "name": "withdraw",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        }
+      ],
+      "evm": {
+        "bytecode": {
+          "object": "6080604052348015600e575f5ffd5b5060405161066f38038061066f833981016040819052602b91604e565b5f80546001600160a01b0319166001600160a01b03929092169190911790556079565b5f60208284031215605d575f5ffd5b81516001600160a01b03811681146072575f5ffd5b9392505050565b6105e9806100865f395ff3fe608060405234801561000f575f5ffd5b50600436106100a6575f3560e01c80635c975abb1161006e5780635c975abb1461012e57806370a082311461014b578063b460af941461016a578063ba0876521461016a578063ce96cb771461017d578063d905777e1461017d575f5ffd5b80630a28a477146100aa57806316c38b3c146100ce57806338d52e0f146100f15780634cdad506146100aa5780635684d86a1461011b575b5f5ffd5b6100bb6100b8366004610480565b90565b6040519081526020015b60405180910390f35b6100ef6100dc3660046104a7565b6002805460ff1916911515919091179055565b005b5f54610103906001600160a01b031681565b6040516001600160a01b0390911681526020016100c5565b6100ef6101293660046104e4565b610190565b60025461013b9060ff1681565b60405190151581526020016100c5565b6100bb61015936600461050c565b60016020525f908152604090205481565b6100bb610178366004610525565b61025e565b6100bb61018b36600461050c565b61044f565b6001600160a01b0382165f90815260016020526040812080548392906101b7908490610572565b90915550505f546040516340c10f1960e01b8152306004820152602481018390526001600160a01b03909116906340c10f19906044015f604051808303815f87803b158015610204575f5ffd5b505af1158015610216573d5f5f3e3d5ffd5b50506040518381526001600160a01b03851692505f91507fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef9060200160405180910390a35050565b6002545f9060ff16156102a15760405162461bcd60e51b81526020600482015260066024820152651c185d5cd95960d21b60448201526064015b60405180910390fd5b336001600160a01b038316146102e15760405162461bcd60e51b815260206004820152600560248201526437bbb732b960d91b6044820152606401610298565b6001600160a01b0382165f908152600160205260409020548411156103315760405162461bcd60e51b815260206004820152600660248201526573686172657360d01b6044820152606401610298565b6001600160a01b0382165f9081526001602052604081208054869290610358908490610585565b90915550505f5460405163a9059cbb60e01b81526001600160a01b038581166004830152602482018790529091169063a9059cbb906044016020604051808303815f875af11580156103ac573d5f5f3e3d5ffd5b505050506040513d601f19601f820116820180604052508101906103d09190610598565b6104075760405162461bcd60e51b81526020600482015260086024820152673a3930b739b332b960c11b6044820152606401610298565b6040518481525f906001600160a01b038416907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef9060200160405180910390a3509192915050565b6002545f9060ff16610478576001600160a01b0382165f9081526001602052604090205461047a565b5f5b92915050565b5f60208284031215610490575f5ffd5b5035919050565b80151581146104a4575f5ffd5b50565b5f602082840312156104b7575f5ffd5b81356104c281610497565b9392505050565b80356001600160a01b03811681146104df575f5ffd5b919050565b5f5f604083850312156104f5575f5ffd5b6104fe836104c9565b946020939093013593505050565b5f6020828403121561051c575f5ffd5b6104c2826104c9565b5f5f5f60608486031215610537575f5ffd5b83359250610547602085016104c9565b9150610555604085016104c9565b90509250925092565b634e487b7160e01b5f52601160045260245ffd5b8082018082111561047a5761047a61055e565b8181038181111561047a5761047a61055e565b5f602082840312156105a8575f5ffd5b81516104c28161049756fea2646970667358221220f8a5989f8a49cbe6d197268e17d101fce6c1a45b5cd0d154fc00ea27b96553f764736f6c634300081e0033"
+        }
+      }
+    }
+  }
+}

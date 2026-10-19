@@ -1,0 +1,10 @@
+node_modules
+work
+outputs
+.git
+.revex
+.wrangler
+.sites-runtime
+dist
+.env*
+.dev.vars*

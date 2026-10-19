@@ -1,0 +1,15 @@
+services:
+  revex-engines:
+    build:
+      context: .
+      dockerfile: Dockerfile.engine
+    environment:
+      ENGINE_TOKEN: ${ENGINE_TOKEN:?Set an engine access token before launching}
+      ENGINE_HOST: 0.0.0.0
+    ports:
+      - "127.0.0.1:8788:8788"
+    volumes:
+      - revex-engine-data:/app/.revex
+    restart: unless-stopped
+volumes:
+  revex-engine-data:

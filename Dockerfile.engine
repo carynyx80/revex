@@ -1,0 +1,14 @@
+FROM node:24-bookworm AS node
+FROM ubuntu:24.04
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tar libgomp1 libopenblas0 libssl3t64 libcurl4t64 && rm -rf /var/lib/apt/lists/*
+COPY --from=node /usr/local /usr/local
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN npm install -g pnpm@11.25.0 && pnpm install --prod --frozen-lockfile --ignore-scripts
+COPY engine ./engine
+COPY scripts/setup-engines.mjs scripts/start-local.mjs ./scripts/
+RUN node scripts/setup-engines.mjs
+ENV ENGINE_HOST=0.0.0.0 ENGINE_PORT=8788
+EXPOSE 8788
+VOLUME ["/app/.revex"]
+CMD ["node","scripts/start-local.mjs","--engines-only"]

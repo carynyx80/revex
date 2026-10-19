@@ -1,0 +1,50 @@
+{
+  "heimdall": [
+    {
+      "name": "heimdall-linux-amd64",
+      "url": "https://github.com/Jon-Becker/heimdall-rs/releases/download/0.9.3/heimdall-linux-amd64",
+      "sha256": "8d58c97f56d584d5d0737d0d0895fc8c68b7b8b2b680f2a7842245789f0b4868"
+    },
+    {
+      "name": "heimdall-linux-arm64",
+      "url": "https://github.com/Jon-Becker/heimdall-rs/releases/download/0.9.3/heimdall-linux-arm64",
+      "sha256": "ef1d236e5e194e1722e12552b66303d3172e0c4cc267b096f7bc8a053f168df8"
+    },
+    {
+      "name": "heimdall-macos-amd64",
+      "url": "https://github.com/Jon-Becker/heimdall-rs/releases/download/0.9.3/heimdall-macos-amd64",
+      "sha256": "5fd05a7ef935896592a81c99db031e887369897d482c408eb86ccdd53310be53"
+    },
+    {
+      "name": "heimdall-macos-arm64",
+      "url": "https://github.com/Jon-Becker/heimdall-rs/releases/download/0.9.3/heimdall-macos-arm64",
+      "sha256": "c279e92aa5a2178cb6327861f206eddee5d53209bb19a863915159b844cc0d23"
+    }
+  ],
+  "llama": [
+    {
+      "name": "llama-b11742-bin-macos-arm64.tar.gz",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11742/llama-b11742-bin-macos-arm64.tar.gz",
+      "sha256": "574ad2e53af1aac14e90d5aa72e81a8d67c549822f00a9af91fcf8be099ace08"
+    },
+    {
+      "name": "llama-b11742-bin-macos-x64.tar.gz",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11742/llama-b11742-bin-macos-x64.tar.gz",
+      "sha256": "4a6c9c1308b4d1953ae9c758319176bc7237a2f2179d03c7feb86bf67a5efcf8"
+    },
+    {
+      "name": "llama-b11742-bin-ubuntu-arm64.tar.gz",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11742/llama-b11742-bin-ubuntu-arm64.tar.gz",
+      "sha256": "263700393b5a0f3547ca313ef6040c25482b569dc6aa387bf5a8ecb9949b159e"
+    },
+    {
+      "name": "llama-b11742-bin-ubuntu-x64.tar.gz",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11742/llama-b11742-bin-ubuntu-x64.tar.gz",
+      "sha256": "81b7895ec1730a33da6f9973a65ec5be5a83147768e290b6405779e0707422c1"
+    }
+  ],
+  "model": {
+    "url": "https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/resolve/23749fefcc72300e3a2ad315e1317431b06b590a/Qwen3-0.6B-Q8_0.gguf",
+    "sha256": "9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031"
+  }
+}
