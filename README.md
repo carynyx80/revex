@@ -2,6 +2,12 @@
 
 A working Robinhood Chain forensic workstation with a React/Vinext frontend, Cloudflare Worker APIs, D1 investigation storage, and native analysis engines backed by SQLite.
 
+## Let other people use it
+
+[Deploy REVEX](https://render.com/deploy?repo=https://github.com/carynyx80/revex)
+
+The single-service deployment serves the website and every native engine together, with private visitor sessions and persistent storage. The deployment screen shows paid hosting costs before you approve them. See [DEPLOY.md](DEPLOY.md) for the short walkthrough and operating limits. A public cloud deployment has not yet been confirmed.
+
 ## Start locally
 
 Requires Node 24+, pnpm 11.25.0, macOS or Linux on arm64/x64, internet access to Robinhood Chain, and enough disk/memory for the 639 MB Qwen model.
@@ -41,7 +47,11 @@ pnpm build
 
 `test:fork` actually starts an isolated Robinhood mainnet fork, funds only an explicit test account on that fork, deploys controlled local fixtures, validates withdrawal limits, and verifies asset/share deltas and execution traces. It never deploys fixtures or broadcasts transactions to the real chain. The fixture Solidity and compiled artifacts are committed under `tests/fixtures/`.
 
-## Deployment
+## Single-service production runtime
+
+Run `pnpm build:web` and `pnpm start:production`, or use `Dockerfile` / `compose.production.yaml`. The Node web service exposes port 8080 and serves all application APIs through one origin. It keeps visitors’ histories and jobs isolated with signed HttpOnly cookies, checks same-origin requests, limits request sizes/rates, and checks service readiness. Data is stored in SQLite under `.revex`; this path does not require manually provisioning Cloudflare D1. The optional Sites/Worker deployment remains available separately.
+
+## Separate Worker/native deployment
 
 The UI/Worker is configured for private Sites deployment. Native processes cannot execute inside a Cloudflare Worker. `Dockerfile.engine` and `compose.yaml` package the separate native service and local model; configure `REVEX_ENGINE_URL` and matching `ENGINE_TOKEN` as Worker runtime settings when hosting remotely. Non-loopback engine listeners require a token. Use a private HTTPS ingress; the example Compose port is bound to host loopback. Docker configuration is supplied but has not been executed on this machine.
 
@@ -55,4 +65,4 @@ Decompilation is best-effort and cannot guarantee original source recovery or co
 
 Source and runtime configuration support Robinhood Chain mainnet (4663) and testnet (46630) only, using the official public endpoints. Public RPC can rate-limit or restrict archive/log queries. See https://docs.robinhood.com/chain/connecting/.
 
-The current Site is owner-private. Do not expand its audience without adding per-user authentication, record isolation, deployment-specific rate limits and operational monitoring. No live recovery or successful wallet transaction is claimed by the included tests.
+The optional Sites deployment is owner-private and its legacy D1 history is shared within that private Site. The standalone production runtime isolates anonymous visitor records and rate-limits requests; durable cross-device accounts, multi-instance infrastructure and wider operational monitoring still require additional deployment work. No live recovery or successful wallet transaction is claimed by the included tests.

@@ -57,3 +57,5 @@ next-env.d.ts
 
 /.revex/
 .dev.vars*
+
+/dist-web/

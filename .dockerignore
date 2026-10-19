@@ -8,3 +8,4 @@ outputs
 dist
 .env*
 .dev.vars*
+dist-web

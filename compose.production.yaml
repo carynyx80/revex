@@ -1,0 +1,16 @@
+services:
+  revex:
+    build: .
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:8080}
+      WEB_PORT: 8080
+    volumes:
+      - revex-data:/app/.revex
+      - heimdall-cache:/root/.bifrost
+    restart: unless-stopped
+    stop_grace_period: 15s
+volumes:
+  revex-data:
+  heimdall-cache:

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=22.13.0"
+    "node": ">=24"
   },
   "scripts": {
     "install:ci": "pnpm install --no-frozen-lockfile",
@@ -16,7 +16,10 @@
     "engines": "node engine/server.mjs",
     "setup:engines": "node scripts/setup-engines.mjs",
     "start:local": "node scripts/start-local.mjs",
-    "test:fork": "REVEX_FORK_TEST=1 node --test tests/fork-integration.test.mjs"
+    "test:fork": "REVEX_FORK_TEST=1 node --test tests/fork-integration.test.mjs",
+    "build:web": "vite build --config vite.standalone.config.ts",
+    "serve:web": "node engine/web-server.mjs",
+    "start:production": "node scripts/start-production.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

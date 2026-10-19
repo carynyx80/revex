@@ -1,0 +1,45 @@
+name: Verify REVEX
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: revex-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  application:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+      - run: npm install -g pnpm@11.25.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:web
+      - run: pnpm exec tsc --noEmit
+      - run: node scripts/setup-engines.mjs --without-model
+      - run: REVEX_FORK_TEST=1 pnpm test
+  container:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - run: docker build -t revex-verification .
+      - run: docker run -d --name revex -p 8080:8080 revex-verification
+      - name: Verify complete deployed service
+        run: |
+          for attempt in $(seq 1 120); do
+            if curl --fail --silent http://localhost:8080/healthz; then
+              curl --fail --silent http://localhost:8080/api/engine?path=/status
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs revex
+          exit 1
+      - if: always()
+        run: docker logs revex || true
