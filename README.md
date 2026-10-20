@@ -2,6 +2,14 @@
 
 A working Robinhood Chain forensic workstation with a React/Vinext frontend, Cloudflare Worker APIs, D1 investigation storage, and native analysis engines backed by SQLite.
 
+## Deploy to Vercel
+
+[Deploy REVEX to Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fcarynyx80%2Frevex)
+
+Import this repository; the committed `vercel.json` selects the standalone Vite build and Node API. No secrets or paid services are required for read-only mode. See [VERCEL.md](VERCEL.md).
+
+**Vercel mode:** real contract analysis, disassembly, ABI reads, explicit token balance reads, and read-only RPC simulation. No persistent investigation history. Local AI, symbolic decompilation, indexed discovery, fork simulation and guarded recovery need the separate native service and are explicitly unavailable on this deployment. The complete engine code remains included and can run locally without hosting fees.
+
 ## Let other people use it
 
 [Deploy REVEX](https://render.com/deploy?repo=https://github.com/carynyx80/revex)
