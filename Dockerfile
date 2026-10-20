@@ -1,23 +1,18 @@
-FROM node:24-bookworm AS build
+FROM node:24-bookworm-slim AS build
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN npm install -g pnpm@11.25.0 && pnpm install --frozen-lockfile --ignore-scripts
+RUN npm install -g pnpm@11.25.0
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN pnpm run build:web
-
-FROM ubuntu:24.04
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tar libgomp1 libopenblas0 libssl3t64 libcurl4t64 && rm -rf /var/lib/apt/lists/*
-COPY --from=build /usr/local /usr/local
+RUN pnpm build:web
+FROM node:24-bookworm-slim
 WORKDIR /app
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/engine ./engine
-COPY --from=build /app/lib ./lib
-COPY --from=build /app/scripts/setup-engines.mjs /app/scripts/start-production.mjs ./scripts/
+ENV NODE_ENV=production WEB_HOST=0.0.0.0 PORT=8080
 COPY --from=build /app/dist-web ./dist-web
-COPY package.json ./
-RUN node scripts/setup-engines.mjs
-ENV WEB_HOST=0.0.0.0 WEB_PORT=8080 ENGINE_HOST=127.0.0.1
+COPY --from=build /app/api ./api
+COPY --from=build /app/engine/solana ./engine/solana
+COPY --from=build /app/engine/http-security.mjs ./engine/http-security.mjs
+COPY --from=build /app/package.json ./package.json
 EXPOSE 8080
-VOLUME ["/app/.revex"]
-HEALTHCHECK --interval=30s --timeout=5s --start-period=120s CMD node -e "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
-CMD ["node","scripts/start-production.mjs"]
+USER node
+CMD ["node","engine/solana/server.mjs"]

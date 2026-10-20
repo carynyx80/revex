@@ -1,76 +1,57 @@
-# REVEX
+# REVEX — Solana
 
-A working Robinhood Chain forensic workstation with a React/Vinext frontend, Cloudflare Worker APIs, D1 investigation storage, and native analysis engines backed by SQLite.
+Reverse Engineer. Reconstruct. Recover.
 
-## Deploy to Vercel
+REVEX now targets Solana mainnet-beta and devnet. The active interface and API no longer use Robinhood Chain, EVM addresses, Ethereum ABI calls, ERC-4626 recovery, Heimdall or Anvil.
 
-[Deploy REVEX to Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fcarynyx80%2Frevex)
+## Run locally
 
-Import this repository; the committed `vercel.json` selects the standalone Vite build and Node API. No secrets or paid services are required for read-only mode. See [VERCEL.md](VERCEL.md).
-
-**Vercel mode:** real contract analysis, disassembly, ABI reads, explicit token balance reads, and read-only RPC simulation. No persistent investigation history. Local AI, symbolic decompilation, indexed discovery, fork simulation and guarded recovery need the separate native service and are explicitly unavailable on this deployment. The complete engine code remains included and can run locally without hosting fees.
-
-## Let other people use it
-
-[Deploy REVEX](https://render.com/deploy?repo=https://github.com/carynyx80/revex)
-
-The single-service deployment serves the website and every native engine together, with private visitor sessions and persistent storage. The deployment screen shows paid hosting costs before you approve them. See [DEPLOY.md](DEPLOY.md) for the short walkthrough and operating limits. A public cloud deployment has not yet been confirmed.
-
-## Start locally
-
-Requires Node 24+, pnpm 11.25.0, macOS or Linux on arm64/x64, internet access to Robinhood Chain, and enough disk/memory for the 639 MB Qwen model.
+Node 24 and pnpm 11.25.0 are required.
 
 ```sh
-pnpm install
-pnpm setup:engines
+pnpm install --frozen-lockfile
 pnpm start:local
 ```
 
-Open http://127.0.0.1:5173/. The launcher starts the local model, native engine service, and workstation, reusing services that are already healthy. `setup:engines` downloads pinned official releases and verifies SHA-256/SHA-512 integrity. Heimdall writes its own configuration/cache to `~/.bifrost`. No home directory environment variable is overridden.
+Open http://127.0.0.1:8080. For frontend hot reload, keep the API server running on 8080 and run `pnpm dev` separately. No native engine/model download is needed.
 
-Native jobs and wallet indexing checkpoints persist in `.revex/engine.sqlite`. Model authorization uses a generated file with mode 0600 at `.revex/local-ai-key`. These files and all runtime binaries/model weights are ignored and excluded from source packages.
+## Deploy to Vercel
 
-D1 investigations use `.openai/hosting.json` binding `DB`. Generate schema migrations with `pnpm db:generate`; local previews need the schema applied with Wrangler against the starter's local D1 database. The native engines operate independently of D1.
+Import this repository. `vercel.json` configures the Vite build (`pnpm build:web`, output `dist-web`) and Node serverless API. No paid resources are provisioned by this code. No domain purchase is necessary. A public deployment has not been verified.
 
-## Implemented engines
+Optional server environment variables:
 
-- **Decompilation:** Heimdall 0.9.3 symbolic execution against bytecode pinned to an upstream block. Returns Solidity pseudocode, inferred ABI, bytecode hash, provenance, and engine logs. One click opens the inferred ABI in Reconstruction Studio. Placeholder names preserve original selectors during calldata encoding.
-- **Position discovery:** Scans actual incoming/outgoing ERC-20 Transfer logs, deduplicates token candidates, persists resumable checkpoints, reads current token/native balances at a pinned block, and probes compatible ERC-4626 vaults. Coverage and truncation are explicit. Jobs scan at most 10,000 blocks; the UI defaults to 2,000 and resumes on demand. Full historical coverage requires continuing to genesis; empty partial results never prove absence of assets.
-- **Fork simulation:** A disposable Anvil instance forks the selected Robinhood network at an explicit block. Transactions execute only on its loopback RPC. Results include receipts, recursive call traces, sender native balance changes, gas costs and tracked-token deltas. Forks are terminated after each job. Sender gas balance is not artificially topped up in user simulations.
-- **Autonomous research:** Local Qwen3-0.6B performs real model inference after a bounded plan automatically collects contract and/or wallet evidence. An optional OpenAI provider supports up to five model-directed rounds using strict, scope-checked read-only function tools. Neither provider can sign or submit transactions.
-- **Recovery:** ERC-4626 `withdraw` and `redeem` plans check current limits and share balances. Receiver and owner are fixed to the connected wallet. The engine requires a successful fresh fork simulation with positive underlying-asset recovery and observed share burn; it rechecks code, proxy implementation, calldata and live limits before returning a transaction for wallet review. No token approval or server-side signing is used.
+- `SOLANA_MAINNET_RPC_URL`
+- `SOLANA_DEVNET_RPC_URL`
 
-## AI configuration
+HTTPS endpoints are required; each request checks the cluster genesis hash. Public Solana RPC endpoints may block hosting-provider IPs or impose rate limits. An available RPC provider is required for live results. Do not put provider credentials in frontend variables.
 
-Local AI runs without a cloud credential. It uses CPU execution with thinking disabled. Small-model findings must be checked against attached tool evidence. Optionally configure `AI_API_KEY` and `AI_MODEL` in ignored `.dev.vars` to use OpenAI. Runtime secrets never enter browser code. `.dev.vars` is loaded by the native service; restart it after changes.
+## Implemented Solana workflows
 
-## Verification
+- **Analyze:** validate 32-byte base58 public keys, inspect account ownership/executable status, parsed data, program loader metadata when provided, observed slot and 15 recent signatures. Raw base64 account data is SHA-256 hashed. Parsed JSON is not represented as original source code.
+- **Protocol Explorer / Activity:** session evidence library; export actual results. No server-side history or cross-device records.
+- **Reconstruction Studio:** inspect user-imported Anchor IDL instructions, account requirements, discriminators and argument definitions. Imported IDLs are unverified; the app does not generate arbitrary signing controls from them.
+- **Recovery Center:** discover currently owned SPL Token and Token-2022 accounts, exact raw token units and native lamports. Partial provider failures are shown. No claim of complete DeFi position discovery or recoverability.
+- **Simulation Lab:** real Solana `simulateTransaction`, with logs and compute units. Base64 wire transaction size is bounded at 1232 bytes. Signatures are not verified, recent blockhash is replaced, and no transaction is broadcast.
+- **Wallets:** injected Phantom and Solflare connection, account/disconnection events. No seed phrases or signing requests.
+- **Launch:** project information and a link to the official Pump.fun creation flow. No token creation transaction, mint address, sale or liquidity is fabricated.
+
+## Explicit remaining limits
+
+Solana source decompilation, autonomous AI, protocol-specific recovery execution and all-protocol indexed position discovery are not implemented. The evidence workspace states that it is not AI. Solana RPC simulation is not a disposable validator fork. Account observations can come from different confirmed slots, so they are not an atomic snapshot.
+
+Old EVM engine modules and their tests remain in the repository as historical source, isolated from the active UI, Vercel entrypoint, default scripts and production Docker image. They are not Solana implementations. `pnpm test:legacy` runs their historical unit suite; `pnpm test:fork` remains a legacy EVM test and is not part of Solana CI.
+
+## Pump.fun
+
+REVEX the application and any future REVEX token are separate. The Launch page links to https://pump.fun/create. Review token metadata, economics, wallet and platform terms there. No launch or transaction has been performed, and no audit or successful fund recovery is claimed.
+
+## Verify
 
 ```sh
 pnpm test
-pnpm test:fork
 pnpm exec tsc --noEmit
-pnpm build
+pnpm build:web
 ```
 
-`test:fork` actually starts an isolated Robinhood mainnet fork, funds only an explicit test account on that fork, deploys controlled local fixtures, validates withdrawal limits, and verifies asset/share deltas and execution traces. It never deploys fixtures or broadcasts transactions to the real chain. The fixture Solidity and compiled artifacts are committed under `tests/fixtures/`.
-
-## Single-service production runtime
-
-Run `pnpm build:web` and `pnpm start:production`, or use `Dockerfile` / `compose.production.yaml`. The Node web service exposes port 8080 and serves all application APIs through one origin. It keeps visitors’ histories and jobs isolated with signed HttpOnly cookies, checks same-origin requests, limits request sizes/rates, and checks service readiness. Data is stored in SQLite under `.revex`; this path does not require manually provisioning Cloudflare D1. The optional Sites/Worker deployment remains available separately.
-
-## Separate Worker/native deployment
-
-The UI/Worker is configured for private Sites deployment. Native processes cannot execute inside a Cloudflare Worker. `Dockerfile.engine` and `compose.yaml` package the separate native service and local model; configure `REVEX_ENGINE_URL` and matching `ENGINE_TOKEN` as Worker runtime settings when hosting remotely. Non-loopback engine listeners require a token. Use a private HTTPS ingress; the example Compose port is bound to host loopback. Docker configuration is supplied but has not been executed on this machine.
-
-Use `ENGINE_TOKEN` in the container environment, never a committed secret. Data persists in the `revex-engine-data` volume. The engine service rejects direct browser-Origin requests and exposes only bounded jobs, status and guarded recovery validation; it does not expose an arbitrary RPC forwarding endpoint.
-
-## Evidence and audit boundaries
-
-**No independent security audit has been performed.** Recovery guards have automated unit, security-boundary and real-fork fixture tests. These are not an external audit certificate. The UI states this explicitly.
-
-Decompilation is best-effort and cannot guarantee original source recovery or complete path coverage. Inferred ABI types and mutability remain unverified. Transfer indexing does not discover all nonstandard, rebasing or eventless positions. Anvil implements standard EVM behavior; Robinhood-specific ArbOS precompiles/sequencing can differ. Only explicitly tracked assets and sender balances are compared; state may change before submission. A compatible vault read surface does not prove legitimacy, solvency or safe recovery.
-
-Source and runtime configuration support Robinhood Chain mainnet (4663) and testnet (46630) only, using the official public endpoints. Public RPC can rate-limit or restrict archive/log queries. See https://docs.robinhood.com/chain/connecting/.
-
-The optional Sites deployment is owner-private and its legacy D1 history is shared within that private Site. The standalone production runtime isolates anonymous visitor records and rate-limits requests; durable cross-device accounts, multi-instance infrastructure and wider operational monitoring still require additional deployment work. No live recovery or successful wallet transaction is claimed by the included tests.
+The Solana tests use explicit mocked RPC fixtures for deterministic behavior; they are not evidence of live balances. CI also builds and smoke-tests the production Docker container. API request bounds, origin checks and per-instance best-effort throttling are retained.

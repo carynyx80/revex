@@ -1,4 +1,4 @@
-import {createWebApi} from '../engine/web-api.mjs';
+import {createWebApi} from '../engine/solana/web-api.mjs';
 import {readJsonBody,makeRateLimiter} from '../engine/http-security.mjs';
 const limit=makeRateLimiter({limit:20}); // Per-instance protection; not a distributed quota.
 function reply(res,data,status=200){res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data))}
@@ -23,9 +23,9 @@ export default async function handler(req,res){
   if(req.headers.origin&&req.headers.origin!=='https://'+req.headers.host&&req.headers.origin!=='http://'+req.headers.host)return reply(res,{error:'Cross-origin request rejected'},403);
   if(pathname==='/api/engine'){
    const target=url.searchParams.get('path')||'/status';
-   if(req.method==='GET'&&target==='/status')return reply(res,{engine:false,decompiler:false,fork:false,ai:null,indexer:false,queued:0,auditStatus:'No independent audit',deployment:'Vercel read-only mode',error:'Native engines require a separate persistent service. Run the full application locally for these features.'});
+   if(req.method==='GET'&&target==='/status')return reply(res,{engine:false,decompiler:false,fork:false,ai:null,indexer:false,queued:0,auditStatus:'No independent audit',deployment:'Solana RPC mode',error:'Solana account inspection, SPL discovery and RPC simulation are available. Source decompilation and autonomous AI are not configured.'});
    if(req.method==='GET'&&target==='/jobs')return reply(res,[]);
-   return reply(res,{error:'This Vercel deployment supports read-only contract analysis. Native AI, decompilation, indexed discovery, fork simulation and guarded recovery require the separate engine service.'},503);
+   return reply(res,{error:'EVM engine operations are retired. Use Solana account inspection, SPL wallet discovery or transaction simulation.'},503);
   }
   if(req.method==='POST'){
    const allowance=limit(String(req.headers['x-forwarded-for']||req.socket?.remoteAddress||'unknown'));

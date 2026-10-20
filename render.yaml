@@ -1,20 +1,10 @@
-# Render shows the paid compute and disk costs before the user deploys.
-# The complete native stack does not fit on a 512 MB free instance.
 services:
   - type: web
-    name: revex
+    name: revex-solana
     runtime: docker
-    plan: 2c-4g
+    plan: free
     dockerfilePath: ./Dockerfile
     healthCheckPath: /healthz
     envVars:
-      - key: WEB_PORT
+      - key: PORT
         value: 8080
-      - key: AI_THREADS
-        value: 2
-      - key: ENGINE_TOKEN
-        generateValue: true
-    disk:
-      name: revex-data
-      mountPath: /app/.revex
-      sizeGB: 5

@@ -1,14 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import http from 'node:http';
-import handler from '../api/gateway.js';
-test('Vercel routing exposes honest status and rejects unavailable native jobs',async()=>{
- const server=http.createServer(handler);await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
- try{
-  let response=await fetch(base+'/api/gateway?route=revex');let data=await response.json();assert.equal(data.storage,false);assert.deepEqual(data.analyses,[]);
-  response=await fetch(base+'/api/gateway?route=engine&path=/status');data=await response.json();assert.equal(data.engine,false);assert.equal(data.ai,null);
-  response=await fetch(base+'/api/gateway?route=engine&path=/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});assert.equal(response.status,503);
-  response=await fetch(base+'/api/gateway?route=investigate',{method:'POST',headers:{'Content-Type':'application/json',origin:'https://untrusted.example'},body:'{}'});assert.equal(response.status,403);
-  response=await fetch(base+'/api/gateway?route=unknown');assert.equal(response.status,404);
- }finally{await new Promise(r=>server.close(r))}
-});
+import test from 'node:test';import assert from 'node:assert/strict';import {Readable} from 'node:stream';import handler from '../api/gateway.js';
+async function run(url,{method='GET',headers={},body}={}){const req=Readable.from(body?[Buffer.from(body)]:[]);Object.assign(req,{url,method,headers:{host:'revex.example',...headers},socket:{remoteAddress:'127.0.0.1'}});let status,content;const response={headersSent:false,setHeader(){},writeHead(value){status=value;this.headersSent=true},end(value){content=value}};await handler(req,response);return {status,value:content?JSON.parse(content):null}}
+test('Vercel routes report Solana mode and retire EVM jobs honestly',async()=>{let response=await run('/api/gateway?route=revex');assert.equal(response.value.storage,false);assert.equal(response.value.chain,'Solana');response=await run('/api/gateway?route=engine&path=/status');assert.equal(response.value.deployment,'Solana RPC mode');response=await run('/api/gateway?route=engine&path=/jobs',{method:'POST'});assert.equal(response.status,503);response=await run('/api/gateway?route=investigate',{method:'POST',headers:{origin:'https://untrusted.example'}});assert.equal(response.status,403);response=await run('/api/gateway?route=unknown');assert.equal(response.status,404)});
+test('Vercel rejects malformed account requests before RPC access',async()=>{const response=await run('/api/gateway?route=investigate',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({network:'mainnet',address:'0x0000000000000000000000000000000000000000'})});assert.equal(response.status,400);assert.match(response.value.error,/Solana|base58/)});

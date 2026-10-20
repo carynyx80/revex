@@ -1,5 +1,5 @@
 {
-  "name": "site-creator-vinext-starter",
+  "name": "revex-solana",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -7,19 +7,20 @@
   },
   "scripts": {
     "install:ci": "pnpm install --no-frozen-lockfile",
-    "dev": "node scripts/run-framework.mjs dev",
-    "build": "node scripts/run-framework.mjs build",
-    "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
+    "dev": "vite --config vite.standalone.config.ts --host 127.0.0.1",
+    "build": "pnpm build:web",
+    "start": "node engine/solana/server.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
-    "test": "node --test tests/*.test.mjs",
-    "engines": "node engine/server.mjs",
+    "test": "node --test tests/solana.test.mjs tests/vercel.test.mjs",
+    "engines": "node engine/solana/server.mjs",
     "setup:engines": "node scripts/setup-engines.mjs",
-    "start:local": "node scripts/start-local.mjs",
+    "start:local": "pnpm build:web && node engine/solana/server.mjs",
     "test:fork": "REVEX_FORK_TEST=1 node --test tests/fork-integration.test.mjs",
     "build:web": "vite build --config vite.standalone.config.ts",
-    "serve:web": "node engine/web-server.mjs",
-    "start:production": "node scripts/start-production.mjs"
+    "serve:web": "node engine/solana/server.mjs",
+    "start:production": "node engine/solana/server.mjs",
+    "test:legacy": "node --test tests/analysis.test.mjs tests/engine-guards.test.mjs tests/indexer.test.mjs tests/web-service.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

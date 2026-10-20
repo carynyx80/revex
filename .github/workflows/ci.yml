@@ -1,4 +1,4 @@
-name: Verify REVEX
+name: Verify REVEX Solana
 on:
   push:
     branches: [main]
@@ -11,7 +11,7 @@ concurrency:
 jobs:
   application:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.1.0
@@ -21,25 +21,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build:web
       - run: pnpm exec tsc --noEmit
-      - run: node scripts/setup-engines.mjs --without-model
-      - run: REVEX_FORK_TEST=1 pnpm test
-  container:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - run: docker build -t revex-verification .
-      - run: docker run -d --name revex -p 8080:8080 revex-verification
-      - name: Verify complete deployed service
-        run: |
-          for attempt in $(seq 1 120); do
-            if curl --fail --silent http://localhost:8080/healthz; then
-              curl --fail --silent http://localhost:8080/api/engine?path=/status
-              exit 0
-            fi
-            sleep 2
-          done
-          docker logs revex
+      - run: pnpm test
+      - run: docker build -t revex-solana .
+      - run: |
+          docker run -d --name revex-solana -p 8080:8080 revex-solana
+          for i in $(seq 1 20); do curl --fail http://127.0.0.1:8080/healthz && exit 0; sleep 1; done
+          docker logs revex-solana
           exit 1
-      - if: always()
-        run: docker logs revex || true
